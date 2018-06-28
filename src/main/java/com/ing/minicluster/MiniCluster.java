@@ -3,11 +3,22 @@ package com.ing.minicluster;
 import com.github.sakserv.minicluster.impl.HdfsLocalCluster;
 import com.github.sakserv.minicluster.impl.HiveLocalMetaStore;
 import com.github.sakserv.minicluster.impl.HiveLocalServer2;
+import com.github.sakserv.minicluster.impl.ZookeeperLocalCluster;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 
 public class MiniCluster {
-    public void hdfsMinicluster() throws Exception {
+    public static void zookeeperMinicluster() throws Exception {
+        ZookeeperLocalCluster zookeeperLocalCluster = new ZookeeperLocalCluster.Builder()
+            .setPort(2181)
+            .setTempDir("embedded_zookeeper")
+            .setZookeeperConnectionString("localhost:2181")
+            .build();
+
+        zookeeperLocalCluster.start();
+    }
+
+    public static void hdfsMinicluster() throws Exception {
         HdfsLocalCluster hdfsLocalCluster = new HdfsLocalCluster.Builder()
                 .setHdfsNamenodePort(8020)
                 .setHdfsNamenodeHttpPort(50070)
@@ -42,7 +53,7 @@ public class MiniCluster {
                 .setHiveScratchDir("hive_scratch_dir")
                 .setHiveWarehouseDir("warehouse_dir")
                 .setHiveConf(new HiveConf())
-                .setZookeeperConnectionString("localhost:12345")
+                .setZookeeperConnectionString("localhost:2181")
                 .build();
 
         hiveLocalServer2.start();
@@ -50,6 +61,8 @@ public class MiniCluster {
 
     public static void main(String[] args) {
         try {
+            zookeeperMinicluster();
+            hdfsMinicluster();
             hiveServer2MiniCluster();
         } catch (Exception e) {
             System.out.println("Error while starting: " + e);
